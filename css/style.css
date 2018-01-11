@@ -1,0 +1,9 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #terminal {
+  height: 100%;
+  min-height: 100%;
+}
