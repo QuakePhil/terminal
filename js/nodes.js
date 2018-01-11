@@ -11,12 +11,24 @@ function decodeHtml(html) {
 
 var paths = ['/bin','/usr/local/bin']
 
+function resolvePath(dir) {
+  if (dir === '.') {
+    dir = cwd
+  } else if (dir === '..') {
+    dir = cwd.split('/').reverse()[1]
+  }
+  dir = dir.replace(/\/?$/, '/') // ensure dir ends on a slash
+  return dir
+}
 
 var nodes = {
-  "/bin/cd": {
+  "/bin/cd": { // todo: make cd work with relative paths
     description: 'Change working directory',
     method: function(args) {
-      let dir = args[1].replace(/\/?$/, '/') // ensure dir ends on a slash
+      if (typeof args[1] === 'undefined') {
+        return nodes["/bin/pwd"].method()
+      }
+      let dir = resolvePath(args[1])
 
       for (let node in nodes) {
         if (node.startsWith(dir)) {
@@ -55,7 +67,8 @@ var nodes = {
     method: function(args) {
       let foundNodes = []
       let dir = args[1] ? args[1] : cwd
-      dir = dir.replace(/\/?$/, '/') // ensure dir ends on a slash
+      dir = resolvePath(dir)
+      console.log(dir)
       for (let node in this.nodesIn([dir])) {
         let pathBeginsWith = node.substring(dir.length).split('/')[0] // ls(/x/y) /x/y/z becomes /x/y/
         console.log(node, pathBeginsWith)
@@ -109,7 +122,7 @@ var nodes = {
     method: function(args) {
       let foundNodes = []
       let dir = args[1] ? args[1] : cwd
-      dir = dir.replace(/\/?$/, '/') // ensure dir ends on a slash
+      dir = resolvePath(dir)
       for (let node in nodes["/bin/ls"].nodesIn([dir])) {
         foundNodes.push(node)
       }
